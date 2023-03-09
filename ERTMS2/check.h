@@ -28,6 +28,11 @@
         printf ("%s\n", msg);       \
         exit( EXIT_FAILURE );       \
     } 
+	
+typedef enum {
+    FALSE,
+    TRUE
+} bool;
 
 
 #endif

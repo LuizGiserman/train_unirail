@@ -1,0 +1,7 @@
+Connect
+
+Handshake: idTrain
+
+Message:
+
+idTrain | Demand/Free |  SizeRest | ResourcesQuantity | R1 | R2 ...

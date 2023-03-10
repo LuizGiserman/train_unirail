@@ -1,6 +1,8 @@
 #ifndef CHECK_H
 #define CHECK_H
 
+#define EXIT_FAILURE	-1
+
 #define CHECK_NOT(stat, val, msg)   \
 	if ( (stat) == val )            \
 	{                               \

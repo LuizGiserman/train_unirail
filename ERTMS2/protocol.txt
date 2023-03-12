@@ -4,8 +4,11 @@ Handshake: idTrain
 
 Message:
 
-idTrain | Demand/Free |  SizeRest | ResourcesQuantity | R1 | R2 ...
+idTrain | Demand/Free |  SizeRest | ResourcesQuantity | A1 | A2 |...| C1 |...| CN
 
+Retour:
+
+idTrain | SizeRest | ResourcesQuantity |  A1 | A2 |...| C1 |...| CN
 
 Demande:
 - idTrain

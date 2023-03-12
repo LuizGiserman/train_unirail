@@ -12,7 +12,7 @@
 #define HEADER_SIZE         3
 
 /* Resources MACROS */
-#define NUM_RESOURECS       20
+#define NUM_RESOURECS       47 + 1
 
 #define OK                  0
 

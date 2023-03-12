@@ -368,17 +368,15 @@ void ThreadEnvoyerMessages()
         pthread_mutex_unlock(&mutexEnvoi);
 
 
-        /* TRAIN|TAILLE|QUANTITY|RES1|RES.... */
-        messageSize = newEnvoi->quantity + HEADER_SIZE + 1;
+        messageSize = newEnvoi->quantity + HEADER_SIZE;
         buffer = (char *) malloc(messageSize);
 
         buffer[0] = newEnvoi->trainID;
-        buffer[1] = newEnvoi->socket;
-        buffer[2] = newEnvoi->quantity + 1;
-        buffer[3] = newEnvoi->quantity;
+        buffer[1] = newEnvoi->quantity + 1;
+        buffer[2] = newEnvoi->quantity;
         for (int i = 0; i < newEnvoi->quantity; i++)
         {
-            buffer[4 + i] = newEnvoi->resources[i];
+            buffer[3 + i] = newEnvoi->resources[i];
         }
 
         errorHandler = send(newEnvoi->socket, buffer, messageSize, 0);

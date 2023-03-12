@@ -3,6 +3,9 @@
 
 #include "../check.h"
 
+#define GET_AIGUILLAGE(val) \
+	return val+29;
+
 #define HEADER_SIZE     3
 #define TRAIN_ID        0
 
@@ -10,6 +13,9 @@
 #define SERVER_IP       "127.0.0.1"
 
 #define HANDSHAKE_SIZE  1
+
+
+#define AIGUILLAGE	29
 
 typedef int canton; /* 1-29 */
 typedef int aiguillage; /* 30-47 */
@@ -29,9 +35,12 @@ typedef enum {
 } purpose;
 
 void ThreadTraiterBalise(void* arg);
-char *CreateMessageGR();
 void ThreadDemandeResources();
-int CreateMessageLib(nodeDemande demande, char *result);
+void ThreadEcouterResources(int socket);
+int EstablishConnection();
+int CreateMessageDem(nodeDemande demande, char **result);
+int CreateMessageLib(nodeDemande demande, char **result);
+
 aiguillage GetAiguillage(int num);
 
 #endif

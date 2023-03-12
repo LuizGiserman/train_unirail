@@ -4,24 +4,24 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
 
 #include "evc.h"
 #include "../../Libs_Unirail/CAN/canLinux.h"
 // #include "../../Libs_Unirail/CAN/MESCAN1_ID&DLC_INFRA.h"
 
-nodeDemande path[10];
+nodeDemande path[10] = {
 
-/* Exemple de demande sur une balise */
+	/* Demander aiguillages avant. Derniere Canton a la fin */
+	[0] = { 2, (int[2]) {AIGUILLAGE + 2, 2}, /* Demander */
+			2, (int[2]) {AIGUILLAGE + 2, 2}, /* Liberer */
+		  },
+	[1] = {
+		 
+		  }
+};
 
-// path[0].quantityDem = 2;
-// path[0].resourcesDem = (int *) malloc(sizeof(int) * path[0].quantityDem);
-// path[0].resourcesDem[0] = 2;
-// path[0].resourcesDem[0] = GetAiguillage(2);
-
-// path[0].quantityLib = 2;
-// path[0].resourcesLib = (int *) malloc(sizeof(int) * path[0].quantityLib);
-// path[0].resourcesLib[0] = 2;
-// path[0].resourcesLib[0] = GetAiguillage(2);
 
 /* Fin d'example */
 
@@ -30,18 +30,21 @@ canton 	currentCanton;
 canton 	lastCantonAuthorised;
 int 	currentBalise;
 
-
 pthread_mutex_t mutexBalise;
+pthread_mutex_t mutexLastAuthorised;
 
 sem_t semDemandeRes;
+sem_t semEcouteRep;
 
 int main()
 {
-	/* Înit semaphores */
+	/* Init semaphores */
 	sem_init(&semDemandeRes, 0, 1);
+	sem_init(&semEcouteRep, 0, 0);
 
 
 	ThreadTraiterBalise(NULL);
+	ThreadDemandeResources();
 
 }
 
@@ -52,8 +55,8 @@ void ThreadTraiterBalise(void* arg) {
 	char 		*NomPort = "can0";
 
 	struct can_filter rfilter; 
-	
-	// Get balise
+
+	/* Filter for balise */	
 	rfilter.can_mask = CAN_SFF_MASK;
 	rfilter.can_id   = MC_ID_EBTL2_RECEIVED;
 
@@ -94,30 +97,73 @@ void ThreadDemandeResources()
 
 	/* Connection to server */
 	socket = EstablishConnection();
+	ThreadEcouterResources(socket);
 
 	for(;;)
 	{
 		sem_wait(&semDemandeRes);
 		
-		messageSize = CreateMessageLib(path[currentIndex], messageLib);
+		messageSize = CreateMessageLib(path[currentIndex], &messageLib);
 		if (messageSize > 0)
 		{
 			errorHandler = send(socket, messageLib, messageSize, 0);
 			CHECK_NOT_LT(errorHandler, 0, "Erreur send");
 		}
 
-		messageSize = CreateMessageDem(path[currentIndex], messageDem);
+		messageSize = CreateMessageDem(path[currentIndex], &messageDem);
 		if (messageSize > 0)
 		{
 			errorHandler = send(socket, messageDem, messageSize, 0);
 			CHECK_NOT_LT(errorHandler, 0, "Erreur send");
+			sem_post(&semEcouteRep);
 		}
 
 		currentIndex++;
 	}
 }
 
-int CreateMessageLib(nodeDemande demande, char *result)
+void ThreadEcouterResources(int socket)
+{
+
+	char 	*buffer;
+	int 	errorHandler;
+	int 	leftToRead;
+
+	for(;;)
+	{
+		sem_wait(&semEcouteRep);
+		/* Receive header */
+		buffer = (char *) malloc(HEADER_SIZE-1);
+		CHECK_NOT(buffer, NULL, "Erreur Malloc");
+
+		do
+		{
+			errorHandler = recv(socket, buffer, HEADER_SIZE-1, MSG_PEEK);
+		} while (errorHandler < HEADER_SIZE-1);
+		errorHandler = recv(socket, buffer, HEADER_SIZE-1, 0);
+		CHECK_NOT_LT(errorHandler, 0, "Erreur recv");
+
+		leftToRead = buffer[1];
+
+		free(buffer);
+		buffer = (char *) malloc(leftToRead);
+		CHECK_NOT(buffer, NULL, "Erreur Malloc");
+
+		do
+		{
+			errorHandler = recv(socket, buffer, leftToRead, MSG_PEEK);
+		} while (errorHandler < leftToRead);
+		errorHandler = recv(socket, buffer, leftToRead, 0);
+		CHECK_NOT_LT(errorHandler, 0, "Erreur recv");
+
+		pthread_mutex_lock(&mutexLastAuthorised);
+		lastCantonAuthorised = (canton) buffer[leftToRead -1];
+		pthread_mutex_unlock(&mutexLastAuthorised);
+		
+	}
+}
+
+int CreateMessageLib(nodeDemande demande, char **result)
 {
 	char	*buffer;
 	int		messageSize;
@@ -140,10 +186,11 @@ int CreateMessageLib(nodeDemande demande, char *result)
 		buffer[4+i] = demande.resourcesLib[i];
 	}
 
+	*result = buffer;
 	return messageSize;
 }
 
-int CreateMessageLib(nodeDemande demande, char *result)
+int CreateMessageDem(nodeDemande demande, char **result)
 {
 	char	*buffer;
 	int		messageSize;
@@ -166,6 +213,7 @@ int CreateMessageLib(nodeDemande demande, char *result)
 		buffer[4+i] = demande.resourcesDem[i];
 	}
 
+	*result = buffer;
 	return messageSize;
 }
 
@@ -212,3 +260,5 @@ int EstablishConnection()
     return sd1;
 
 }
+
+

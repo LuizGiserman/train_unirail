@@ -1,26 +1,26 @@
 #ifndef CHECK_H
 #define CHECK_H
 
-#define EXIT_FAILURE	-1
+#define EXIT_FAIL	-1
 
 #define CHECK_NOT(stat, val, msg)   \
 	if ( (stat) == val )            \
 	{                               \
 		printf ("%s\n", msg);       \
-		exit( EXIT_FAILURE );       \
+		exit( EXIT_FAIL );       \
     } 
 #define PTHREAD_CHECK(stat, msg)    \
 	if ( (stat) != 0 )              \
 	{                               \
 		printf ("%s\n", msg);       \
-		exit( EXIT_FAILURE );       \
+		exit( EXIT_FAIL );       \
     } 
 
 #define CHECK_EQUALS(stat, val, msg) \
 	if ( (stat) != val )            \
 	{                               \
 		printf ("%s\n", msg);       \
-		exit( EXIT_FAILURE );       \
+		exit( EXIT_FAIL );       \
     } 
 
 
@@ -28,7 +28,7 @@
     if ( (stat) < val )              \
     {                               \
         printf ("%s\n", msg);       \
-        exit( EXIT_FAILURE );       \
+        exit( EXIT_FAIL );       \
     } 
 	
 typedef enum {

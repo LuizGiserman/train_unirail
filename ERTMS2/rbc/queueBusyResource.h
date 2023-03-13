@@ -4,14 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "queueDemande.h"
-
-#define CHECK_NOT(stat, val, msg)   \
-	if ( (stat) == val )            \
-	{                               \
-		printf ("%s\n", msg);       \
-		exit( EXIT_FAILURE );       \
-    } 
-
+#include "../check.h"
 typedef struct 
 {
     int resource;

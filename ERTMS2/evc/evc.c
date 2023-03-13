@@ -11,14 +11,12 @@
 #include "../../Libs_Unirail/CAN/canLinux.h"
 // #include "../../Libs_Unirail/CAN/MESCAN1_ID&DLC_INFRA.h"
 
-nodeDemande path[10] = {
+nodeDemande path[PATH_SIZE] = {
 
 	/* Demander aiguillages avant. Derniere Canton a la fin */
-	[0] = { 2, (int[2]) {AIGUILLAGE + 2, 2}, /* Demander */
+	[0] = { 
+			2, (int[2]) {AIGUILLAGE + 2, 2}, /* Demander */
 			2, (int[2]) {AIGUILLAGE + 2, 2}, /* Liberer */
-		  },
-	[1] = {
-		 
 		  }
 };
 
@@ -36,16 +34,28 @@ pthread_mutex_t mutexLastAuthorised;
 sem_t semDemandeRes;
 sem_t semEcouteRep;
 
+pthread_t threadTraiterBalise;
+pthread_t threadDemandeResources;
+pthread_t threadEcouterResources;
+
 int main()
 {
+	int errorHandler;
 	/* Init semaphores */
 	sem_init(&semDemandeRes, 0, 1);
 	sem_init(&semEcouteRep, 0, 0);
 
 
-	ThreadTraiterBalise(NULL);
-	ThreadDemandeResources();
+    errorHandler = pthread_create(&threadTraiterBalise, NULL, (pf_t) ThreadTraiterBalise, (void *) NULL);
+    PTHREAD_CHECK(errorHandler, "Erreur pthread_create");
 
+    errorHandler = pthread_create(&threadDemandeResources, NULL, (pf_t) ThreadDemandeResources, (void *) NULL);
+    PTHREAD_CHECK(errorHandler, "Erreur pthread_create");
+
+	pthread_join(threadTraiterBalise, NULL);
+	pthread_join(threadDemandeResources, NULL);
+
+	return OK;
 }
 
 void ThreadTraiterBalise(void* arg) {
@@ -85,7 +95,7 @@ void ThreadTraiterBalise(void* arg) {
 	printf("EXIT CAN reading\n");
 }
 
-void ThreadDemandeResources()
+void ThreadDemandeResources(void *args)
 {
 	static int currentIndex = 0;
 
@@ -97,9 +107,11 @@ void ThreadDemandeResources()
 
 	/* Connection to server */
 	socket = EstablishConnection();
-	ThreadEcouterResources(socket);
 
-	for(;;)
+	errorHandler = pthread_create(&threadEcouterResources, NULL, (pf_t) ThreadEcouterResources, (void *) &socket);
+    PTHREAD_CHECK(errorHandler, "Erreur pthread_create");
+
+	while(currentIndex < PATH_SIZE)
 	{
 		sem_wait(&semDemandeRes);
 		
@@ -122,8 +134,10 @@ void ThreadDemandeResources()
 	}
 }
 
-void ThreadEcouterResources(int socket)
+void ThreadEcouterResources(void * args)
 {
+	int socket =  (int) *((int *) args);
+
 
 	char 	*buffer;
 	int 	errorHandler;

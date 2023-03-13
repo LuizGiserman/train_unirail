@@ -14,8 +14,11 @@
 
 #define HANDSHAKE_SIZE  1
 
+#define AIGUILLAGE	    29
 
-#define AIGUILLAGE	29
+#define OK              0
+
+#define PATH_SIZE       1
 
 typedef int canton; /* 1-29 */
 typedef int aiguillage; /* 30-47 */
@@ -34,9 +37,11 @@ typedef enum {
     PURPOSE_LIBERER_RESOURCE
 } purpose;
 
+typedef void * (*pf_t)(void *);
+
 void ThreadTraiterBalise(void* arg);
-void ThreadDemandeResources();
-void ThreadEcouterResources(int socket);
+void ThreadDemandeResources(void *arg);
+void ThreadEcouterResources(void *args);
 int EstablishConnection();
 int CreateMessageDem(nodeDemande demande, char **result);
 int CreateMessageLib(nodeDemande demande, char **result);

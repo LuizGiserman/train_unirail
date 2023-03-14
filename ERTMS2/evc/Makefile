@@ -11,7 +11,10 @@ LFLAGS = -Wall -pthread -lrt
 LIBCHEMIN = ../../Libs_Unirail/CAN/
 CONTROLLEUR_CHEMIN = controlleur/
 
-EVCOBJS = evc.o canLinux.o MESCAN1_Utilitaire.o CONTROLADOR.o odometrie.o
+EVCOBJS = evc.o \
+ canLinux.o MESCAN1_Utilitaire.o MESCAN1_VarStatusTrain.o MESCAN1_VarTrain.o\
+ CONTROLADOR.o CONTROLADOR_data.o\
+ odometrie.o
 			  
 EXECS = evc
 
@@ -22,11 +25,22 @@ all: $(ALL)
 canLinux.o: $(LIBCHEMIN)canLinux.c
 	$(CC) $(CFLAGS) -c $< 
 
-CONTROLADOR.o : $(CONTROLLEUR_CHEMIN)CONTROLADOR.c
+CONTROLADOR.o: $(CONTROLLEUR_CHEMIN)CONTROLADOR.c
+	$(CC) $(CFLAGS) -c $< 
+
+CONTROLADOR_data.o: $(CONTROLLEUR_CHEMIN)CONTROLADOR_data.c
 	$(CC) $(CFLAGS) -c $< 
 
 MESCAN1_Utilitaire.o: $(LIBCHEMIN)MESCAN1_Utilitaire.c
 	$(CC) $(CFLAGS) -c $< 
+
+MESCAN1_VarStatusTrain.o: $(LIBCHEMIN)MESCAN1_VarStatusTrain.c
+	$(CC) $(CFLAGS) -c $< 
+
+MESCAN1_VarTrain.o: $(LIBCHEMIN)MESCAN1_VarTrain.c
+	$(CC) $(CFLAGS) -c $< 
+
+
 
 
 evc: $(EVCOBJS)

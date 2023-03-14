@@ -5,23 +5,24 @@ AR = ar
 
 #linkeditar
 DEBUG = -D DEBUG
-CFLAGS = -Wall -pthread -DMC802=0#$(DEBUG) 
-LFLAGS = -Wall -pthread
+CFLAGS = -Wall -pthread -lrt -DMC802=0 #$(DEBUG) 
+LFLAGS = -Wall -pthread -lrt
 
 LIBCHEMIN = ../../Libs_Unirail/CAN/
+CONTROLLEUR_CHEMIN = controlleur/
 
-EVCOBJS = evc.o canLinux.o MESCAN1_Utilitaire.o
+EVCOBJS = evc.o canLinux.o MESCAN1_Utilitaire.o CONTROLADOR.o odometrie.o
 			  
-OBJS = $(SERVEUROBJS)
-
 EXECS = evc
 
-ALL = $(EXECS) \
-	  $(OBJS)
+ALL = $(EXECS) 
 
 all: $(ALL)
 
 canLinux.o: $(LIBCHEMIN)canLinux.c
+	$(CC) $(CFLAGS) -c $< 
+
+CONTROLADOR.o : $(CONTROLLEUR_CHEMIN)CONTROLADOR.c
 	$(CC) $(CFLAGS) -c $< 
 
 MESCAN1_Utilitaire.o: $(LIBCHEMIN)MESCAN1_Utilitaire.c

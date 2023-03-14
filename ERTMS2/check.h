@@ -1,5 +1,5 @@
-#ifndef CHECK_H
-#define CHECK_H
+#ifndef CHECK_H__
+#define CHECK_H__
 
 #define EXIT_FAIL	-1
 

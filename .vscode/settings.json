@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "controlador.h": "c",
+        "canlinux.h": "c",
+        "odometrie.h": "c",
+        "loco_parametres.h": "c",
+        "mescan1_vartrain.h": "c",
+        "stdarg.h": "c"
+    }
+}

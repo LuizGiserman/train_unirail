@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <stdarg.h>
 
 #include "rbc.h"
 #include "../check.h"
@@ -23,6 +24,8 @@ pthread_mutex_t     mutexResources[NUM_RESOURECS];
 pthread_mutex_t     mutexBuffer;
 pthread_mutex_t     mutexEnvoi;
 pthread_mutex_t     mutexBusyRes;
+
+pthread_mutex_t     writeScreen;
 
 sem_t   semEnvoiAvailable;
 sem_t   semBufferWake;
@@ -59,7 +62,7 @@ int main ()
 
     errorHolder = listen(serverSocket, MAX_CONNECTIONS);
     CHECK_NOT(errorHolder, -1, "Erreur listen");
-    printf("Serveur a l'ecoute\n");
+    Display(NAME_MAIN, "Serveur a l'ecoute\n");
 
 
     /* Initializing semaphores */
@@ -94,7 +97,7 @@ int main ()
 
         errorHolder = pthread_create(&threadEcouteID[index++], NULL, (pf_t) ThreadEcouterMessages, (void *) args);
         PTHREAD_CHECK(errorHolder, "Erreur pthread_create");
-        printf ("> Thread created: %d\n", index-1);
+        Display (NAME_MAIN, "Thread created: %d\n", index-1);
 
         if (index == MAX_CONNECTIONS)
         {
@@ -386,4 +389,21 @@ void ThreadEnvoyerMessages()
         free(buffer);
     }
 
+}
+
+void Display(const char *name, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	struct timespec now;
+
+	clock_gettime(CLOCK_REALTIME, &now);
+
+	pthread_mutex_lock(&writeScreen);
+	printf("[%ld.%ld]", now.tv_sec, now.tv_nsec);
+	printf("%s: ", name);
+	vprintf(format, args);
+	pthread_mutex_unlock(&writeScreen);
+
+	va_end(args);
 }

@@ -16,6 +16,11 @@
 
 #define OK                  0
 
+#define NAME_ENVOYER_MESSAGES   "EnvoyerMessages"
+#define NAME_ECOUTER_MESSAGES   "EcouterMessages"
+#define NAME_MAIN               "Main"
+#define NAME_TRAITER_BUFFER     "TraiterBuffer"
+
 
 typedef struct {
 
@@ -37,4 +42,5 @@ void ThreadTraiterBufferRequetes();
 void ThreadEnvoyerMessages();
 void UnlockResources(int quantity, int *resources);
 
+void Display(const char *name, const char *format, ...);
 #endif

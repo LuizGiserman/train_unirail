@@ -289,13 +289,12 @@ void ThreadOdometrie(void *arg)
 {
 	uCAN1_MSG 			recCanMsg;
 	struct can_filter 	rfilter;
-	int 				canPort;
 	char 				*NomPort = "can0";
 
 	rfilter.can_id   = MC_ID_SCHEDULEUR_MESURES;
 	rfilter.can_mask = CAN_SFF_MASK;
 	
-	canPort = canLinux_init_prio(NomPort);
+	canLinux_init_prio(NomPort);
 	canLinux_initFilter(&rfilter, sizeof(rfilter));
 
 	for(;;)
